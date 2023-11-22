@@ -22,7 +22,7 @@ jobs:
         npm install
     
     - name: 📂 Sync files
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      uses: SamKirkland/FTP-Deploy-Action@v4.0.0
       with:
         server: ${{ secrets.GIT_CPANEL_SERVER }}
         username: ${{ secrets.GIT_CPANEL_USER }}
@@ -30,6 +30,3 @@ jobs:
         server-dir: ${{ secrets.GIT_CPANEL_DIR }}
         protocol: ${{ secrets.GIT_CPANEL_PROTOCOL }}
         port: ${{ secrets.GIT_CPANEL_PORT }}
-        timeout-seconds: 600
-        
-        
