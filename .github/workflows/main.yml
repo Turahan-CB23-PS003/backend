@@ -1,41 +1,31 @@
-name: Node.js CI/CD
-
-on:
+on: 
   push:
     branches:
       - main
+name: 🚀 Deploy backend on push
 
 jobs:
-  build:
+  web-deploy:
+    name: 🎉 Deploy
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - name: 🚚 Get latest code
+      uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 14
-
-      - name: Install dependencies
-        run: npm install
-
-  deploy:
-    runs-on: ubuntu-latest
-
-    needs: build
-
-    steps:
-      - name: Deploy to cPanel
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.CPANEL_HOST }}
-          username: ${{ secrets.CPANEL_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.CPANEL_PORT }}
-          script: |
-            cd /path/to/your/remote/directory
-            git pull origin main
-            npm install --production
-            npm run start  # Adjust the start command as needed
+    - name: Use Node.js 16
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'
+      
+    - name: 🔨 Build Project
+      run: |
+        npm install
+        npm run start
+    
+    - name: 📂 Sync files
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      with:
+        server: ${{ secrets.GIT_CPANEL_SERVER }}
+        username: ${{ secrets.GIT_CPANEL_USER }}
+        password: ${{ secrets.GIT_CPANEL_PWD }}
+        protocol: ${{ secrets.GIT_CPANEL_PROTOCOL }}
