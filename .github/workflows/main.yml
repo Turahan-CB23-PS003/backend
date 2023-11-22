@@ -1,22 +1,31 @@
-name: Node.js CI/CD
-
-on:
+on: 
   push:
     branches:
       - main
+name: 🚀 Deploy backend on push
 
 jobs:
-  FTP-Deploy-Action:
-    name: FTP-Deploy-Action
+  web-deploy:
+    name: 🎉 Deploy
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - name: 🚚 Get latest code
+      uses: actions/checkout@v3
+
+    - name: Use Node.js 16
+      uses: actions/setup-node@v2
       with:
-        fetch-depth: 2
-    - name: FTP-Deploy-Action
+        node-version: '16'
+      
+    - name: 🔨 Build Project
+      run: |
+        npm install
+        npm run start
+    
+    - name: 📂 Sync files
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-      with: 
-        ftp-server: ${{ secrets.GIT_CPANEL_SERVER }}
-        ftp-username: ${{ secrets.GIT_CPANEL_USER }}
-        ftp-password: ${{ secrets.GIT_CPANEL_PWD }}
-        
+      with:
+        server: ${{ secrets.GIT_CPANEL_SERVER }}
+        username: ${{ secrets.GIT_CPANEL_USER }}
+        password: ${{ secrets.GIT_CPANEL_PWD }}
+        protocol: ${{ secrets.GIT_CPANEL_PROTOCOL }}
