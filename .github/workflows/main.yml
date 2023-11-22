@@ -28,3 +28,5 @@ jobs:
         username: ${{ secrets.GIT_CPANEL_USER }}
         password: ${{ secrets.GIT_CPANEL_PWD }}
         server-dir: ${{ secrets.GIT_CPANEL_DIR }}
+        debug: true
+        
