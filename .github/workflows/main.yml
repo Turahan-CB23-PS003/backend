@@ -30,5 +30,7 @@ jobs:
         server-dir: ${{ secrets.GIT_CPANEL_DIR }}
         protocol: ${{ secrets.GIT_CPANEL_PROTOCOL }}
         port: ${{ secrets.GIT_CPANEL_PORT }}
+        dry-run: true
+        state-name: ftp-deploy-sync-state.json
         exclude: |
           **/.*
