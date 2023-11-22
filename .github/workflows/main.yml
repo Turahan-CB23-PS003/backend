@@ -30,3 +30,4 @@ jobs:
         password: ${{ secrets.GIT_CPANEL_PWD }}
         server-dir: ${{ secrets.GIT_CPANEL_DIR }}
         protocol: ${{ secrets.GIT_CPANEL_PROTOCOL }}
+        timeout: 6000000
