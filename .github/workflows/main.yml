@@ -1,31 +1,41 @@
-on: 
+name: Node.js CI/CD
+
+on:
   push:
     branches:
       - main
-name: 🚀 Deploy backend on push
 
 jobs:
-  web-deploy:
-    name: 🎉 Deploy
+  build:
     runs-on: ubuntu-latest
-    steps:
-    - name: 🚚 Get latest code
-      uses: actions/checkout@v3
 
-    - name: Use Node.js 16
-      uses: actions/setup-node@v2
-      with:
-        node-version: '16'
-      
-    - name: 🔨 Build Project
-      run: |
-        npm install
-        npm run start
-    
-    - name: 📂 Sync files
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-      with:
-        server: ${{ secrets.GIT_CPANEL_SERVER }}
-        username: ${{ secrets.GIT_CPANEL_USER }}
-        password: ${{ secrets.GIT_CPANEL_PWD }}
-        protocol: ${{ secrets.GIT_CPANEL_PROTOCOL }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14
+
+      - name: Install dependencies
+        run: npm install
+
+  deploy:
+    runs-on: ubuntu-latest
+
+    needs: build
+
+    steps:
+      - name: Deploy to cPanel
+        uses: appleboy/ssh-action@master
+        with:
+          server: ${{ secrets.GIT_CPANEL_SERVER }}
+          username: ${{ secrets.GIT_CPANEL_USER }}
+          password: ${{ secrets.GIT_CPANEL_PWD }}
+          protocol: ${{ secrets.GIT_CPANEL_PROTOCOL }}
+          script: |
+            cd ./public_html/turahan.ziakode.com
+            git pull origin main
+            npm install --production
+            npm run start  # Adjust the start command as needed
