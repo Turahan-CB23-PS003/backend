@@ -1,0 +1,25 @@
+{
+  "name": "backend-turahan",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Turahan-CB23-PS003/backend.git"
+  },
+  "keywords": [
+    "backend"
+  ],
+  "author": "Turahan Team",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Turahan-CB23-PS003/backend/issues"
+  },
+  "homepage": "https://github.com/Turahan-CB23-PS003/backend#readme",
+  "dependencies": {
+    "@hapi/hapi": "^21.3.2"
+  }
+}
