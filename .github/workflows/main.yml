@@ -22,10 +22,9 @@ jobs:
         npm install
     
     - name: 📂 Sync files
-      uses: SamKirkland/FTP-Deploy-Action@v4.0.0
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
       with:
         server: ${{ secrets.GIT_CPANEL_SERVER }}
         username: ${{ secrets.GIT_CPANEL_USER }}
         password: ${{ secrets.GIT_CPANEL_PWD }}
         server-dir: ${{ secrets.GIT_CPANEL_DIR }}
-        security: loose
