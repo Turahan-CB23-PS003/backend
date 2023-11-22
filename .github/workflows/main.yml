@@ -12,5 +12,5 @@ jobs:
         uses: airvzxf/ftp-deployment-action@latest
         with:
           server: ${{ secrets.GIT_CPANEL_SERVER }}
-          username: ${{ secrets.GIT_CPANEL_USER }}
+          user: ${{ secrets.GIT_CPANEL_USER }}
           password: ${{ secrets.GIT_CPANEL_PWD }}
