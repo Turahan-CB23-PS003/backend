@@ -22,7 +22,7 @@ jobs:
         npm install
     
     - name: 📂 Sync files
-      uses: SamKirkland/FTP-Deploy-Action@v4.1.0
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
       with:
         server: ${{ secrets.GIT_CPANEL_SERVER }}
         username: ${{ secrets.GIT_CPANEL_USER }}
@@ -30,4 +30,3 @@ jobs:
         server-dir: ${{ secrets.GIT_CPANEL_DIR }}
         protocol: ${{ secrets.GIT_CPANEL_PROTOCOL }}
         port: ${{ secrets.GIT_CPANEL_PORT }}
-        transferMode: 'binary'
