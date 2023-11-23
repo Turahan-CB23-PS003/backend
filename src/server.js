@@ -8,7 +8,7 @@ const { routes: retailersRoutes } = require("./apis/retailers/routes");
 const init = async () => {
   const server = Hapi.server({
     port: process.env.PORT,
-    host: "localhost",
+    host: process.env.DB_HOST,
   });
 
   server.route([...retailersRoutes]);
