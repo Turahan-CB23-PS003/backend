@@ -1,9 +1,10 @@
+const { routing } = require("../../helpers/Routing");
 const { testConnection } = require("./handler");
 
 const routes = [
   {
     method: "GET",
-    path: "/",
+    path: `${routing}/`,
     handler: testConnection,
   },
 ];

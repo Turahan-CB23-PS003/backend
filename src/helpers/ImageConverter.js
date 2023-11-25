@@ -1,16 +1,29 @@
 const fs = require("fs");
 const { Buffer } = require("buffer");
 
-function imageToBlob(filePath) {
-  const imageBuffer = fs.readFileSync(filePath);
-  const imageBase64 = imageBuffer.toString("base64");
-  return Buffer.from(imageBase64, "base64");
-}
+const imageToBlob = (image) => {
+  const tempFilePath = "./temp-image.jpg";
+  const writableStream = fs.createWriteStream(tempFilePath);
 
-const blobToImage = (blob) => {
-  const base64Image = Buffer.from(blob, "binary").toString("base64");
-  const dataURI = `data:image/jpeg;base64,${base64Image}`;
-  return dataURI;
+  return new Promise((resolve, reject) => {
+    image.pipe(writableStream);
+
+    image.on("end", () => {
+      const imageBuffer = fs.readFileSync(tempFilePath);
+      const imageBase64 = imageBuffer.toString("base64");
+      const imageBlob = Buffer.from(imageBase64, "base64");
+      fs.unlinkSync(tempFilePath);
+      resolve(imageBlob);
+    });
+
+    image.on("error", (error) => {
+      reject(error);
+    });
+  });
+};
+
+const blobToImage = (blob, filePath) => {
+  fs.writeFileSync(filePath, blob);
 };
 
 module.exports = { imageToBlob, blobToImage };
