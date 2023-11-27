@@ -41,15 +41,15 @@ class ServerError extends ClientError {
   }
 }
 
-function handleError(error, res) {
+function handleError(error, h) {
   if (error instanceof ClientError) {
-    return res.json({
+    return h.response({
       status: "fail",
       message: error.message,
       code: error.statusCode,
     });
   } else {
-    return res.json({
+    return h.response({
       status: "fail",
       message: error.message,
       code: 500,
