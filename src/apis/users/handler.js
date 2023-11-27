@@ -111,14 +111,14 @@ const getUser = async (request, h) => {
     const { userId } = request.params;
     const { id: credentialId } = request.auth.credentials;
 
-    if (userId !== credentialId) {
+    if (String(userId) !== String(credentialId)) {
       throw new AuthorizationError(
         "User is not authorized to access this resource",
       );
     }
 
     const resultGetUser = await _executeQuery({
-      sql: "SELECT * FROM users WHERE id = ?",
+      sql: "SELECT email, name, image FROM users WHERE id = ?",
       values: [userId],
     });
 

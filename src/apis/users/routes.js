@@ -29,7 +29,7 @@ const routes = [
     },
   },
   {
-    method: "GET",
+    method: "PATCH",
     path: `${routing}/users/{userId}`,
     handler: patchUser,
     options: {

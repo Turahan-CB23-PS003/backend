@@ -1,7 +1,6 @@
 const Joi = require("joi");
 
 const postMealSchema = Joi.object({
-  retailerId: Joi.number().required(),
   name: Joi.string().required(),
   description: Joi.string().required(),
   price: Joi.number().required(),
@@ -11,6 +10,6 @@ const postMealSchema = Joi.object({
   image: Joi.any(),
 });
 
-module.exports = ({
+module.exports = {
   postMealSchema,
-});
+};

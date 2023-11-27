@@ -10,6 +10,7 @@ const routes = [
     path: `${routing}/meals`,
     handler: postMeal,
     options: {
+      auth: "auth_jwt",
       payload: {
         output: "stream",
         parse: true,

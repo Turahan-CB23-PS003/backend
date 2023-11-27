@@ -13,6 +13,7 @@ const { postMealSchema } = require("./validator");
 
 const postMeal = async (request, h) => {
   try {
+    const { id: retailerId } = request.auth.credentials;
     const { error = undefined } = postMealSchema.validate(request.payload);
 
     if (error) {
@@ -25,7 +26,7 @@ const postMeal = async (request, h) => {
 
     const resultPostMeal = await _executeQuery({
       sql: "INSERT INTO meals(retailer_id, name, description, price, status, date_produced, expiry_date, image) VALUES(?, ?, ?, ?, ?, ?, ?, ?)",
-      values: [...Object.values(restPayload), imageBlob],
+      values: [retailerId, ...Object.values(restPayload), imageBlob],
     });
 
     if (resultPostMeal.length === 0) {
