@@ -2,7 +2,7 @@
 
 const path = require("path");
 const { routing } = require("../../helpers/Routing");
-const { postMeal } = require("./handler");
+const { postMeal, getSingleMeal, getAllMeals, getAllMealsImage } = require("./handler");
 
 const routes = [
   {
@@ -17,6 +17,21 @@ const routes = [
         maxBytes: 10 * 1024 * 1024,
       },
     },
+  },
+  {
+    method: "GET",
+    path: `${routing}/meals/{retailerId}/{mealId}`,
+    handler: getSingleMeal,
+  },
+  {
+    method: "GET",
+    path: `${routing}/meals/{retailerId}`,
+    handler: getAllMeals,
+  },
+  {
+    method: "GET",
+    path: `${routing}/meals/images/{retailerId}`,
+    handler: getAllMealsImage,
   },
   {
     method: "GET",
