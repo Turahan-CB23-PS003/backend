@@ -2,12 +2,19 @@
 
 const path = require("path");
 const { routing } = require("../../helpers/Routing");
-const { postMeal, getSingleMeal, getAllMeals, getAllMealsImage } = require("./handler");
+const {
+  postMeal,
+  patchMeal,
+  getSingleMeal,
+  getAllMeals,
+  getAllMealsImage,
+  deleteMeal,
+} = require("./handler");
 
 const routes = [
   {
     method: "POST",
-    path: `${routing}/meals`,
+    path: `${routing}/meals/{retailerId}`,
     handler: postMeal,
     options: {
       auth: "auth_jwt",
@@ -15,7 +22,21 @@ const routes = [
         output: "stream",
         parse: true,
         multipart: true,
-        maxBytes: 10 * 1024 * 1024,
+        maxBytes: 2 * 1024 * 1024,
+      },
+    },
+  },
+  {
+    method: "PATCH",
+    path: `${routing}/meals/{retailerId}/{mealId}`,
+    handler: patchMeal,
+    options: {
+      auth: "auth_jwt",
+      payload: {
+        output: "stream",
+        parse: true,
+        multipart: true,
+        maxBytes: 2 * 1024 * 1024,
       },
     },
   },
@@ -33,6 +54,14 @@ const routes = [
     method: "GET",
     path: `${routing}/meals/images/{retailerId}`,
     handler: getAllMealsImage,
+  },
+  {
+    method: "DELETE",
+    path: `${routing}/meals/{retailerId}/{mealId}`,
+    handler: deleteMeal,
+    options: {
+      auth: "auth_jwt",
+    },
   },
   {
     method: "GET",

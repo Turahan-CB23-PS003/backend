@@ -1,32 +1,60 @@
 const Joi = require("joi");
+const pool = require("../../helpers/DatabasePool");
+const { InvariantError } = require("../../helpers/ErrorsManager");
+
+const getAdminId = async (retailerId) => {
+  const resultGetAdminId = await _executeQuery({
+    sql: "SELECT admin_id FROM retailers WHERE id = ?",
+    values: [retailerId],
+  });
+
+  if (resultGetAdminId.length === 0) {
+    throw new InvariantError("Admin not found");
+  }
+
+  return resultGetAdminId[0].admin_id;
+};
 
 const postRetailerSchema = Joi.object({
   name: Joi.string().required(),
   status: Joi.string().valid("active", "inactive").required(),
-  open_time: Joi.string().required(),
-  close_time: Joi.string().required(),
+  openTime: Joi.string().required(),
+  closeTime: Joi.string().required(),
   location: Joi.string().required(),
   gmaps: Joi.string(),
   contact: Joi.string()
-    .pattern(/^[0-9]{14}$/)
-    .message("Contact number must be below 14-digit numeric value")
-    .required(),
+    .max(13)
+    .pattern(/^[0-9]+$/)
+    .message("Contact number must be a numeric value with less than 14 digits"),
   image: Joi.any(),
-  banner_image: Joi.any(),
+  bannerImage: Joi.any(),
 });
 
 const patchRetailerSchema = Joi.object({
   name: Joi.string().required(),
   status: Joi.string().valid("active", "inactive").required(),
-  open_time: Joi.string().required(),
-  close_time: Joi.string().required(),
+  openTime: Joi.string().required(),
+  closeTime: Joi.string().required(),
   location: Joi.string().required(),
   gmaps: Joi.string(),
   contact: Joi.string()
-    .pattern(/^[0-9]{14}$/)
-    .message("Contact number must be below 14-digit numeric value"),
+    .max(13)
+    .pattern(/^[0-9]+$/)
+    .message("Contact number must be a numeric value with less than 14 digits"),
   image: Joi.any(),
-  banner_image: Joi.any(),
+  bannerImage: Joi.any(),
 });
 
-module.exports = { postRetailerSchema, patchRetailerSchema };
+const _executeQuery = (query) => {
+  return new Promise((resolve, reject) => {
+    pool.query(query, (error, results) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(results);
+      }
+    });
+  });
+};
+
+module.exports = { postRetailerSchema, patchRetailerSchema, getAdminId };

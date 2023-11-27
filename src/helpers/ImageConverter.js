@@ -2,7 +2,7 @@ const fs = require("fs");
 const { Buffer } = require("buffer");
 
 const imageToBlob = (image) => {
-  const tempFilePath = "./temp-image.jpg";
+  const tempFilePath = `./temp-image-${Date.now()}.jpg`;
   const writableStream = fs.createWriteStream(tempFilePath);
 
   return new Promise((resolve, reject) => {

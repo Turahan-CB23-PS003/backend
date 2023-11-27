@@ -144,7 +144,7 @@ const patchUser = async (request, h) => {
     const { userId } = request.params;
     const { id: credentialId } = request.auth.credentials;
 
-    if (userId !== credentialId) {
+    if (String(userId) !== String(credentialId)) {
       throw new AuthorizationError(
         "User is not authorized to access this resource",
       );
@@ -175,6 +175,7 @@ const patchUser = async (request, h) => {
         users: {
           id: userId,
           name,
+          image: imageBlob,
         },
       },
     });

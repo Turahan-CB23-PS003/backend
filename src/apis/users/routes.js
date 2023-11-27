@@ -11,7 +11,7 @@ const routes = [
         output: "stream",
         parse: true,
         multipart: true,
-        maxBytes: 10 * 1024 * 1024,
+        maxBytes: 2 * 1024 * 1024,
       },
     },
   },
@@ -34,6 +34,12 @@ const routes = [
     handler: patchUser,
     options: {
       auth: "auth_jwt",
+      payload: {
+        output: "stream",
+        parse: true,
+        multipart: true,
+        maxBytes: 2 * 1024 * 1024,
+      },
     },
   },
 ];

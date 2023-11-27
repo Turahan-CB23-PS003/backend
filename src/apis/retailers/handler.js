@@ -5,7 +5,11 @@ const {
   NotFoundError,
   handleError,
 } = require("../../helpers/ErrorsManager");
-const { postRetailerSchema, patchRetailerSchema } = require("./validator");
+const {
+  postRetailerSchema,
+  patchRetailerSchema,
+  getAdminId,
+} = require("./validator");
 const { imageToBlob } = require("../../helpers/ImageConverter");
 
 const postRetailer = async (request, h) => {
@@ -20,17 +24,15 @@ const postRetailer = async (request, h) => {
     const {
       gmaps = null,
       image,
-      banner_image,
+      bannerImage,
       ...restPayload
     } = request.payload;
 
     const imageBlob = image ? await imageToBlob(image) : null;
-    const bannerImageBlob = banner_image
-      ? await imageToBlob(banner_image)
-      : null;
+    const bannerImageBlob = bannerImage ? await imageToBlob(bannerImage) : null;
 
     const resultPostRetailer = await _executeQuery({
-      sql: "INSERT INTO retailers(admin_id, gmaps, image, banner_image, name, open_time, close_time, location, contact) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      sql: "INSERT INTO retailers(admin_id, gmaps, image, banner_image, name, status, open_time, close_time, location, contact) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       values: [
         adminId,
         gmaps,
@@ -63,8 +65,9 @@ const patchRetailer = async (request, h) => {
   try {
     const { id: adminId } = request.auth.credentials;
     const { retailerId } = request.params;
+    const adminIdFromDb = await getAdminId(retailerId);
 
-    if (String(adminId) !== String(retailerId)) {
+    if (String(adminId) !== String(adminIdFromDb)) {
       throw new AuthorizationError("You are not authorized to update retailer");
     }
 
@@ -77,17 +80,15 @@ const patchRetailer = async (request, h) => {
     const {
       gmaps = null,
       image,
-      banner_image,
+      bannerImage,
       ...restPayload
     } = request.payload;
 
     const imageBlob = image ? await imageToBlob(image) : null;
-    const bannerImageBlob = banner_image
-      ? await imageToBlob(banner_image)
-      : null;
+    const bannerImageBlob = bannerImage ? await imageToBlob(bannerImage) : null;
 
     const resultPatchRetailer = await _executeQuery({
-      sql: "UPDATE retailers SET gmaps = ?, image = ?, banner_image = ?, name = ?, open_time = ?, close_time = ?, location = ?, contact = ? WHERE id = ? AND admin_id = ?",
+      sql: "UPDATE retailers SET gmaps = ?, image = ?, banner_image = ?, name = ?, status = ?, open_time = ?, close_time = ?, location = ?, contact = ? WHERE id = ? AND admin_id = ?",
       values: [
         gmaps,
         imageBlob,
@@ -199,9 +200,10 @@ const deleteRetailer = async (request, h) => {
   try {
     const { id: adminId } = request.auth.credentials;
     const { retailerId } = request.params;
+    const adminIdFromDb = await getAdminId(retailerId);
 
-    if (String(adminId) !== String(retailerId)) {
-      throw new AuthorizationError("You are not authorized to delete retailer");
+    if (String(adminId) !== String(adminIdFromDb)) {
+      throw new AuthorizationError("You are not authorized to update retailer");
     }
 
     const resultDeleteRetailer = await _executeQuery({

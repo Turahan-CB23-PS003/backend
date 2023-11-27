@@ -1,19 +1,22 @@
 const pool = require("../../helpers/DatabasePool");
 const {
-  // ClientError,
-  // AuthenticationError,
-  // AuthorizationError,
   InvariantError,
-  // NotFoundError,
-  // ServerError,
   handleError,
 } = require("../../helpers/ErrorsManager");
 const { imageToBlob } = require("../../helpers/ImageConverter");
-const { postMealSchema } = require("./validator");
+const {
+  postMealSchema,
+  patchMealSchema,
+  isRetailerExist,
+} = require("./validator");
 
 const postMeal = async (request, h) => {
   try {
-    const { id: retailerId } = request.auth.credentials;
+    const { retailerId } = request.params;
+    const { id: adminId } = request.auth.credentials;
+
+    await isRetailerExist(retailerId, adminId);
+
     const { error = undefined } = postMealSchema.validate(request.payload);
 
     if (error) {
@@ -41,6 +44,47 @@ const postMeal = async (request, h) => {
       },
     });
     response.code(201);
+    return response;
+  } catch (error) {
+    return handleError(error, h);
+  }
+};
+
+const patchMeal = async (request, h) => {
+  try {
+    const { retailerId } = request.params;
+    const { mealId } = request.params;
+    const { id: adminId } = request.auth.credentials;
+
+    await isRetailerExist(retailerId, adminId);
+
+    const { error = undefined } = patchMealSchema.validate(request.payload);
+
+    if (error) {
+      throw new InvariantError(error.message);
+    }
+
+    const { image, ...restPayload } = request.payload;
+
+    const imageBlob = image ? await imageToBlob(image) : null;
+
+    const resultPatchMeal = await _executeQuery({
+      sql: "UPDATE meals SET name = ?, description = ?, price = ?, status = ?, date_produced = ?, expiry_date = ?, image = ? WHERE id = ?",
+      values: [...Object.values(restPayload), imageBlob, mealId],
+    });
+
+    if (resultPatchMeal.length === 0) {
+      throw new InvariantError("Fail to update meal");
+    }
+
+    const response = h.response({
+      status: "success",
+      message: "Meal successfully updated",
+      data: {
+        meals: { ...restPayload },
+      },
+    });
+    response.code(200);
     return response;
   } catch (error) {
     return handleError(error, h);
@@ -120,6 +164,39 @@ const getAllMealsImage = async (request, h) => {
   }
 };
 
+const deleteMeal = async (request, h) => {
+  try {
+    const { retailerId } = request.params;
+    const { mealId } = request.params;
+    const { id: adminId } = request.auth.credentials;
+
+    await isRetailerExist(retailerId, adminId);
+
+    const resultDeleteMeal = await _executeQuery({
+      sql: "DELETE FROM meals WHERE id = ?",
+      values: [mealId],
+    });
+
+    if (resultDeleteMeal.affectedRows < 0) {
+      throw new InvariantError("Fail to delete meal");
+    }
+
+    const response = h.response({
+      status: "success",
+      message: "Meal successfully deleted",
+      data: {
+        meals: {
+          id: mealId,
+        },
+      },
+    });
+    response.code(200);
+    return response;
+  } catch (error) {
+    return handleError(error, h);
+  }
+};
+
 const _executeQuery = (query) => {
   return new Promise((resolve, reject) => {
     pool.query(query, (error, results) => {
@@ -132,4 +209,11 @@ const _executeQuery = (query) => {
   });
 };
 
-module.exports = { postMeal, getSingleMeal, getAllMeals, getAllMealsImage };
+module.exports = {
+  postMeal,
+  patchMeal,
+  getSingleMeal,
+  getAllMeals,
+  getAllMealsImage,
+  deleteMeal,
+};
