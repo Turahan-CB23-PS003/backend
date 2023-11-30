@@ -9,6 +9,8 @@ const {
   getAllMeals,
   getAllMealsImage,
   deleteMeal,
+  getRetailersAllMeals,
+  getRetailersAllMealsImage
 } = require("./handler");
 
 const routes = [
@@ -47,12 +49,12 @@ const routes = [
   },
   {
     method: "GET",
-    path: `${routing}/meals/{retailerId}`,
+    path: `${routing}/meals`,
     handler: getAllMeals,
   },
   {
     method: "GET",
-    path: `${routing}/meals/images/{retailerId}`,
+    path: `${routing}/meals/images`,
     handler: getAllMealsImage,
   },
   {
@@ -62,6 +64,16 @@ const routes = [
     options: {
       auth: "auth_jwt",
     },
+  },
+  {
+    method: "GET",
+    path: `${routing}/meals/{retailerId}`,
+    handler: getRetailersAllMeals,
+  },
+  {
+    method: "GET",
+    path: `${routing}/meals/images/{retailerId}`,
+    handler: getRetailersAllMealsImage,
   },
   {
     method: "GET",

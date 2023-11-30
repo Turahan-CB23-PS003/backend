@@ -1,8 +1,5 @@
 const pool = require("../../helpers/DatabasePool");
-const {
-  InvariantError,
-  handleError,
-} = require("../../helpers/ErrorsManager");
+const { InvariantError, handleError } = require("../../helpers/ErrorsManager");
 const { imageToBlob } = require("../../helpers/ImageConverter");
 const {
   postMealSchema,
@@ -120,11 +117,8 @@ const getSingleMeal = async (request, h) => {
 
 const getAllMeals = async (request, h) => {
   try {
-    const { retailerId } = request.params;
-
     const resultgetAllMeals = await _executeQuery({
       sql: "SELECT id, retailer_id, name, description, price, status, date_produced, expiry_date FROM meals WHERE retailer_id = ?",
-      values: [retailerId],
     });
 
     const response = h.response({
@@ -143,11 +137,8 @@ const getAllMeals = async (request, h) => {
 
 const getAllMealsImage = async (request, h) => {
   try {
-    const { retailerId } = request.params;
-
     const resultgetAllMealsImage = await _executeQuery({
       sql: "SELECT id, retailer_id, image FROM meals WHERE retailer_id = ?",
-      values: [retailerId],
     });
 
     const response = h.response({
@@ -197,6 +188,52 @@ const deleteMeal = async (request, h) => {
   }
 };
 
+const getRetailersAllMeals = async (request, h) => {
+  try {
+    const { retailerId } = request.params;
+
+    const resultgetRetailersAllMeals = await _executeQuery({
+      sql: "SELECT id, retailer_id, name, description, price, status, date_produced, expiry_date FROM meals WHERE retailer_id = ?",
+      values: [retailerId],
+    });
+
+    const response = h.response({
+      status: "success",
+      message: "Meals successfully retrieved",
+      data: {
+        meals: resultgetRetailersAllMeals,
+      },
+    });
+    response.code(200);
+    return response;
+  } catch (error) {
+    return handleError(error, h);
+  }
+};
+
+const getRetailersAllMealsImage = async (request, h) => {
+  try {
+    const { retailerId } = request.params;
+
+    const resultgetRetailersAllMealsImage = await _executeQuery({
+      sql: "SELECT id, retailer_id, image FROM meals WHERE retailer_id = ?",
+      values: [retailerId],
+    });
+
+    const response = h.response({
+      status: "success",
+      message: "Meals image successfully retrieved",
+      data: {
+        meals: resultgetRetailersAllMealsImage,
+      },
+    });
+    response.code(200);
+    return response;
+  } catch (error) {
+    return handleError(error, h);
+  }
+};
+
 const _executeQuery = (query) => {
   return new Promise((resolve, reject) => {
     pool.query(query, (error, results) => {
@@ -216,4 +253,6 @@ module.exports = {
   getAllMeals,
   getAllMealsImage,
   deleteMeal,
+  getRetailersAllMeals,
+  getRetailersAllMealsImage,
 };
