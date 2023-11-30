@@ -118,7 +118,7 @@ const getSingleMeal = async (request, h) => {
 const getAllMeals = async (request, h) => {
   try {
     const resultgetAllMeals = await _executeQuery({
-      sql: "SELECT id, retailer_id, name, description, price, status, date_produced, expiry_date FROM meals WHERE retailer_id = ?",
+      sql: "SELECT id, retailer_id, name, description, price, status, date_produced, expiry_date FROM meals",
     });
 
     const response = h.response({
@@ -138,7 +138,7 @@ const getAllMeals = async (request, h) => {
 const getAllMealsImage = async (request, h) => {
   try {
     const resultgetAllMealsImage = await _executeQuery({
-      sql: "SELECT id, retailer_id, image FROM meals WHERE retailer_id = ?",
+      sql: "SELECT id, retailer_id, image FROM meals",
     });
 
     const response = h.response({
