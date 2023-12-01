@@ -4,7 +4,6 @@ const {
   patchRetailer,
   getSingleRetailer,
   getAllRetailers,
-  getAllRetailersImage,
   deleteRetailer,
 } = require("./handler");
 
@@ -46,11 +45,6 @@ const routes = [
     method: "GET",
     path: `${routing}/retailers`,
     handler: getAllRetailers,
-  },
-  {
-    method: "GET",
-    path: `${routing}/retailers/images`,
-    handler: getAllRetailersImage,
   },
   {
     method: "DELETE",

@@ -1,11 +1,11 @@
 const pool = require("../../helpers/DatabasePool");
 const { InvariantError, handleError } = require("../../helpers/ErrorsManager");
-const { imageToBlob } = require("../../helpers/ImageConverter");
 const {
   postMealSchema,
   patchMealSchema,
   isRetailerExist,
 } = require("./validator");
+const { uploadImage, deleteImage } = require("../../helpers/ImageConverter");
 
 const postMeal = async (request, h) => {
   try {
@@ -21,12 +21,13 @@ const postMeal = async (request, h) => {
     }
 
     const { image, ...restPayload } = request.payload;
-
-    const imageBlob = image ? await imageToBlob(image) : null;
+    const fileName = image
+      ? await uploadImage({ adminId, image, table: "meals" })
+      : null;
 
     const resultPostMeal = await _executeQuery({
       sql: "INSERT INTO meals(retailer_id, name, description, price, status, date_produced, expiry_date, image) VALUES(?, ?, ?, ?, ?, ?, ?, ?)",
-      values: [retailerId, ...Object.values(restPayload), imageBlob],
+      values: [retailerId, ...Object.values(restPayload), fileName],
     });
 
     if (resultPostMeal.length === 0) {
@@ -37,7 +38,7 @@ const postMeal = async (request, h) => {
       status: "success",
       message: "Meal successfully added",
       data: {
-        meals: { ...restPayload },
+        meals: { ...restPayload, image: fileName },
       },
     });
     response.code(201);
@@ -62,12 +63,14 @@ const patchMeal = async (request, h) => {
     }
 
     const { image, ...restPayload } = request.payload;
-
-    const imageBlob = image ? await imageToBlob(image) : null;
+    await deleteImage(mealId, "meals");
+    const fileName = image
+      ? await uploadImage({ adminId, image, table: "meals" })
+      : null;
 
     const resultPatchMeal = await _executeQuery({
       sql: "UPDATE meals SET name = ?, description = ?, price = ?, status = ?, date_produced = ?, expiry_date = ?, image = ? WHERE id = ?",
-      values: [...Object.values(restPayload), imageBlob, mealId],
+      values: [...Object.values(restPayload), fileName, mealId],
     });
 
     if (resultPatchMeal.length === 0) {
@@ -78,7 +81,7 @@ const patchMeal = async (request, h) => {
       status: "success",
       message: "Meal successfully updated",
       data: {
-        meals: { ...restPayload },
+        meals: { ...restPayload, image: fileName },
       },
     });
     response.code(200);
@@ -92,12 +95,12 @@ const getSingleMeal = async (request, h) => {
   try {
     const { mealId } = request.params;
 
-    const resultgetSingleMeal = await _executeQuery({
+    const resultGetSingleMeal = await _executeQuery({
       sql: "SELECT * FROM meals WHERE id = ?",
       values: [mealId],
     });
 
-    if (resultgetSingleMeal.length === 0) {
+    if (resultGetSingleMeal.length === 0) {
       throw new InvariantError("Meal not found");
     }
 
@@ -105,7 +108,7 @@ const getSingleMeal = async (request, h) => {
       status: "success",
       message: "Meal successfully retrieved",
       data: {
-        meals: resultgetSingleMeal[0],
+        meals: resultGetSingleMeal[0],
       },
     });
     response.code(200);
@@ -117,35 +120,30 @@ const getSingleMeal = async (request, h) => {
 
 const getAllMeals = async (request, h) => {
   try {
-    const resultgetAllMeals = await _executeQuery({
-      sql: "SELECT id, retailer_id, name, description, price, status, date_produced, expiry_date FROM meals",
+    const resultGetAllMeals = await _executeQuery({
+      sql: "SELECT * FROM meals",
+    });
+
+    const resultGetAllRetailers = await _executeQuery({
+      sql: "SELECT * FROM retailers",
+    });
+
+    if (resultGetAllRetailers.length === 0) {
+      throw new InvariantError("No retailer found");
+    }
+
+    const meals = resultGetAllMeals.map((meal) => {
+      const retailer = resultGetAllRetailers.find(
+        (retailer) => retailer.id === meal.retailer_id,
+      );
+      return { ...meal, retailer };
     });
 
     const response = h.response({
       status: "success",
       message: "Meals successfully retrieved",
       data: {
-        meals: resultgetAllMeals,
-      },
-    });
-    response.code(200);
-    return response;
-  } catch (error) {
-    return handleError(error, h);
-  }
-};
-
-const getAllMealsImage = async (request, h) => {
-  try {
-    const resultgetAllMealsImage = await _executeQuery({
-      sql: "SELECT id, retailer_id, image FROM meals",
-    });
-
-    const response = h.response({
-      status: "success",
-      message: "Meals image successfully retrieved",
-      data: {
-        meals: resultgetAllMealsImage,
+        meals,
       },
     });
     response.code(200);
@@ -162,6 +160,7 @@ const deleteMeal = async (request, h) => {
     const { id: adminId } = request.auth.credentials;
 
     await isRetailerExist(retailerId, adminId);
+    await deleteImage(mealId, "meals");
 
     const resultDeleteMeal = await _executeQuery({
       sql: "DELETE FROM meals WHERE id = ?",
@@ -192,39 +191,32 @@ const getRetailersAllMeals = async (request, h) => {
   try {
     const { retailerId } = request.params;
 
-    const resultgetRetailersAllMeals = await _executeQuery({
-      sql: "SELECT id, retailer_id, name, description, price, status, date_produced, expiry_date FROM meals WHERE retailer_id = ?",
+    const resultGetRetailersAllMeals = await _executeQuery({
+      sql: "SELECT * FROM meals WHERE retailer_id = ?",
       values: [retailerId],
+    });
+
+    const resultGetAllRetailers = await _executeQuery({
+      sql: "SELECT * FROM retailers WHERE id = ?",
+      values: [retailerId],
+    });
+
+    if (resultGetAllRetailers.length === 0) {
+      throw new InvariantError("No retailer found");
+    }
+
+    const meals = resultGetRetailersAllMeals.map((meal) => {
+      const retailer = resultGetAllRetailers.find(
+        (retailer) => retailer.id === meal.retailer_id,
+      );
+      return { ...meal, retailer };
     });
 
     const response = h.response({
       status: "success",
       message: "Meals successfully retrieved",
       data: {
-        meals: resultgetRetailersAllMeals,
-      },
-    });
-    response.code(200);
-    return response;
-  } catch (error) {
-    return handleError(error, h);
-  }
-};
-
-const getRetailersAllMealsImage = async (request, h) => {
-  try {
-    const { retailerId } = request.params;
-
-    const resultgetRetailersAllMealsImage = await _executeQuery({
-      sql: "SELECT id, retailer_id, image FROM meals WHERE retailer_id = ?",
-      values: [retailerId],
-    });
-
-    const response = h.response({
-      status: "success",
-      message: "Meals image successfully retrieved",
-      data: {
-        meals: resultgetRetailersAllMealsImage,
+        meals,
       },
     });
     response.code(200);
@@ -251,8 +243,6 @@ module.exports = {
   patchMeal,
   getSingleMeal,
   getAllMeals,
-  getAllMealsImage,
   deleteMeal,
   getRetailersAllMeals,
-  getRetailersAllMealsImage,
 };

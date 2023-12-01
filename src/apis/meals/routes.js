@@ -1,5 +1,3 @@
-/* global __dirname */
-
 const path = require("path");
 const { routing } = require("../../helpers/Routing");
 const {
@@ -7,10 +5,8 @@ const {
   patchMeal,
   getSingleMeal,
   getAllMeals,
-  getAllMealsImage,
   deleteMeal,
   getRetailersAllMeals,
-  getRetailersAllMealsImage
 } = require("./handler");
 
 const routes = [
@@ -53,11 +49,6 @@ const routes = [
     handler: getAllMeals,
   },
   {
-    method: "GET",
-    path: `${routing}/meals/images`,
-    handler: getAllMealsImage,
-  },
-  {
     method: "DELETE",
     path: `${routing}/meals/{retailerId}/{mealId}`,
     handler: deleteMeal,
@@ -72,20 +63,11 @@ const routes = [
   },
   {
     method: "GET",
-    path: `${routing}/meals/images/{retailerId}`,
-    handler: getRetailersAllMealsImage,
-  },
-  {
-    method: "GET",
-    path: "/assets/img/pexels-engin-akyurt-1907642.jpg",
+    path: "/img/meals/{filename}",
     handler: (request, h) => {
-      return h.file(
-        path.join(
-          __dirname,
-          "../../assets/img",
-          "pexels-engin-akyurt-1907642.jpg",
-        ),
-      );
+      const { filename } = request.params;
+      const filePath = path.join(__dirname, "../../assets/img/meals", filename);
+      return h.file(filePath);
     },
   },
 ];

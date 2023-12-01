@@ -12,7 +12,7 @@ const {
   postLoginSchema,
   patchUserSchema,
 } = require("./validator");
-const { imageToBlob } = require("../../helpers/ImageConverter");
+const { uploadImage, deleteImage } = require("../../helpers/ImageConverter");
 const { generateAccessToken } = require("../../helpers/TokenManager");
 
 const postRegister = async (request, h) => {
@@ -25,12 +25,19 @@ const postRegister = async (request, h) => {
 
     const { email, password, name, image } = request.payload;
     await verifyNewEmail(email);
-    const imageBlob = image ? await imageToBlob(image) : null;
     const hashedPassword = await bcrypt.hash(password, 10);
+
+    const fileName = image
+      ? await uploadImage({
+          adminId: "u",
+          image,
+          table: "users",
+        })
+      : null;
 
     const retsultPostRegister = await _executeQuery({
       sql: "INSERT INTO users(email, password, name, image) VALUES(?, ?, ?, ?)",
-      values: [email, hashedPassword, name, imageBlob],
+      values: [email, hashedPassword, name, fileName],
     });
 
     if (retsultPostRegister.length === 0) {
@@ -45,6 +52,7 @@ const postRegister = async (request, h) => {
           id: retsultPostRegister.insertId,
           email,
           name,
+          image: fileName,
         },
       },
     });
@@ -157,11 +165,18 @@ const patchUser = async (request, h) => {
     }
 
     const { name, image } = request.payload;
-    const imageBlob = image ? await imageToBlob(image) : null;
+    await deleteImage(credentialId, "users");
+    const fileName = image
+      ? await uploadImage({
+          adminId: "u",
+          image,
+          table: "users",
+        })
+      : null;
 
     const resultPatchUser = await _executeQuery({
       sql: "UPDATE users SET name = ?, image = ? WHERE id = ?",
-      values: [name, imageBlob, userId],
+      values: [name, fileName, userId],
     });
 
     if (resultPatchUser.length === 0) {
@@ -175,7 +190,7 @@ const patchUser = async (request, h) => {
         users: {
           id: userId,
           name,
-          image: imageBlob,
+          image: fileName,
         },
       },
     });

@@ -10,7 +10,7 @@ const {
   patchRetailerSchema,
   getAdminId,
 } = require("./validator");
-const { imageToBlob } = require("../../helpers/ImageConverter");
+const { uploadImage, deleteImage } = require("../../helpers/ImageConverter");
 
 const postRetailer = async (request, h) => {
   try {
@@ -21,25 +21,14 @@ const postRetailer = async (request, h) => {
       throw new InvariantError(error.message);
     }
 
-    const {
-      gmaps = null,
-      image,
-      bannerImage,
-      ...restPayload
-    } = request.payload;
-
-    const imageBlob = image ? await imageToBlob(image) : null;
-    const bannerImageBlob = bannerImage ? await imageToBlob(bannerImage) : null;
+    const { gmaps = null, image, ...restPayload } = request.payload;
+    const fileName = image
+      ? await uploadImage({ adminId, image, table: "retailers" })
+      : null;
 
     const resultPostRetailer = await _executeQuery({
-      sql: "INSERT INTO retailers(admin_id, gmaps, image, banner_image, name, status, open_time, close_time, location, contact) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      values: [
-        adminId,
-        gmaps,
-        imageBlob,
-        bannerImageBlob,
-        ...Object.values(restPayload),
-      ],
+      sql: "INSERT INTO retailers(admin_id, gmaps, image, name, status, open_time, close_time, location, contact) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      values: [adminId, gmaps, fileName, ...Object.values(restPayload)],
     });
 
     if (resultPostRetailer.length === 0) {
@@ -50,7 +39,7 @@ const postRetailer = async (request, h) => {
       status: "success",
       message: "Retailer successfully added",
       data: {
-        retailers: { ...restPayload, gmaps },
+        retailers: { ...restPayload, gmaps, image: fileName },
       },
     });
 
@@ -77,22 +66,17 @@ const patchRetailer = async (request, h) => {
       throw new InvariantError(error.message);
     }
 
-    const {
-      gmaps = null,
-      image,
-      bannerImage,
-      ...restPayload
-    } = request.payload;
-
-    const imageBlob = image ? await imageToBlob(image) : null;
-    const bannerImageBlob = bannerImage ? await imageToBlob(bannerImage) : null;
+    const { gmaps = null, image, ...restPayload } = request.payload;
+    await deleteImage(retailerId, "retailers");
+    const fileName = image
+      ? await uploadImage({ adminId, image, table: "retailers" })
+      : null;
 
     const resultPatchRetailer = await _executeQuery({
-      sql: "UPDATE retailers SET gmaps = ?, image = ?, banner_image = ?, name = ?, status = ?, open_time = ?, close_time = ?, location = ?, contact = ? WHERE id = ? AND admin_id = ?",
+      sql: "UPDATE retailers SET gmaps = ?, image = ?, name = ?, status = ?, open_time = ?, close_time = ?, location = ?, contact = ? WHERE id = ? AND admin_id = ?",
       values: [
         gmaps,
-        imageBlob,
-        bannerImageBlob,
+        fileName,
         ...Object.values(restPayload),
         retailerId,
         adminId,
@@ -107,7 +91,7 @@ const patchRetailer = async (request, h) => {
       status: "success",
       message: "Retailer successfully updated",
       data: {
-        retailers: { ...restPayload, gmaps },
+        retailers: { ...restPayload, gmaps, image: fileName },
       },
     });
 
@@ -149,7 +133,7 @@ const getSingleRetailer = async (request, h) => {
 const getAllRetailers = async (request, h) => {
   try {
     const resultGetAllRetailers = await _executeQuery({
-      sql: "SELECT id, name, status, open_time, close_time, location, gmaps, contact FROM retailers",
+      sql: "SELECT * FROM retailers",
     });
 
     if (resultGetAllRetailers.length === 0) {
@@ -171,31 +155,6 @@ const getAllRetailers = async (request, h) => {
   }
 };
 
-const getAllRetailersImage = async (request, h) => {
-  try {
-    const resultGetAllRetailersImage = await _executeQuery({
-      sql: "SELECT id, name, status, image, banner_image FROM retailers",
-    });
-
-    if (resultGetAllRetailersImage.length === 0) {
-      throw new InvariantError("No retailer found");
-    }
-
-    const response = h.response({
-      status: "success",
-      message: "Retailers successfully retrieved",
-      data: {
-        retailers: resultGetAllRetailersImage,
-      },
-    });
-
-    response.code(200);
-    return response;
-  } catch (error) {
-    return handleError(error, h);
-  }
-};
-
 const deleteRetailer = async (request, h) => {
   try {
     const { id: adminId } = request.auth.credentials;
@@ -205,6 +164,8 @@ const deleteRetailer = async (request, h) => {
     if (String(adminId) !== String(adminIdFromDb)) {
       throw new AuthorizationError("You are not authorized to update retailer");
     }
+
+    await deleteImage(retailerId, "retailers");
 
     const resultDeleteRetailer = await _executeQuery({
       sql: "DELETE FROM retailers WHERE id = ? AND admin_id = ?",
@@ -247,6 +208,5 @@ module.exports = {
   patchRetailer,
   getSingleRetailer,
   getAllRetailers,
-  getAllRetailersImage,
   deleteRetailer,
 };
