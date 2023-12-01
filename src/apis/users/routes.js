@@ -1,3 +1,4 @@
+const path = require("path");
 const { routing } = require("../../helpers/Routing");
 const { postRegister, postLogin, getUser, patchUser } = require("./handler");
 
@@ -40,6 +41,15 @@ const routes = [
         multipart: true,
         maxBytes: 2 * 1024 * 1024,
       },
+    },
+  },
+  {
+    method: "GET",
+    path: "/img/users/{filename}",
+    handler: (request, h) => {
+      const { filename } = request.params;
+      const filePath = path.join(__dirname, "../../assets/img/users", filename);
+      return h.file(filePath);
     },
   },
 ];

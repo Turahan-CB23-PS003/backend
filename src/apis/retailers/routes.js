@@ -1,3 +1,4 @@
+const path = require("path");
 const { routing } = require("../../helpers/Routing");
 const {
   postRetailer,
@@ -52,6 +53,15 @@ const routes = [
     handler: deleteRetailer,
     options: {
       auth: "auth_jwt",
+    },
+  },
+  {
+    method: "GET",
+    path: "/img/retailers/{filename}",
+    handler: (request, h) => {
+      const { filename } = request.params;
+      const filePath = path.join(__dirname, "../../assets/img/retailers", filename);
+      return h.file(filePath);
     },
   },
 ];
