@@ -1,5 +1,5 @@
 const pool = require("../../helpers/DatabasePool");
-const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 const {
   AuthenticationError,
   AuthorizationError,
@@ -15,6 +15,21 @@ const {
 const { uploadImage, deleteImage } = require("../../helpers/ImageConverter");
 const { generateAccessToken } = require("../../helpers/TokenManager");
 
+const hashPassword = (password) => {
+  const salt = crypto.randomBytes(16).toString("hex");
+  const hash = crypto
+    .pbkdf2Sync(password, salt, 10000, 64, "sha512")
+    .toString("hex");
+  return { salt, hash };
+};
+
+const verifyPassword = (password, salt, hash) => {
+  const hashToVerify = crypto
+    .pbkdf2Sync(password, salt, 10000, 64, "sha512")
+    .toString("hex");
+  return hash === hashToVerify;
+};
+
 const postRegister = async (request, h) => {
   try {
     const { error = undefined } = postRegisterSchema.validate(request.payload);
@@ -25,7 +40,7 @@ const postRegister = async (request, h) => {
 
     const { email, password, name, image } = request.payload;
     await verifyNewEmail(email);
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const { salt, hash } = hashPassword(password);
 
     const fileName = image
       ? await uploadImage({
@@ -36,8 +51,8 @@ const postRegister = async (request, h) => {
       : null;
 
     const retsultPostRegister = await _executeQuery({
-      sql: "INSERT INTO users(email, password, name, image) VALUES(?, ?, ?, ?)",
-      values: [email, hashedPassword, name, fileName],
+      sql: "INSERT INTO users(email, password, salt, name, image) VALUES(?, ?, ?, ?, ?)",
+      values: [email, hash, salt, name, fileName],
     });
 
     if (retsultPostRegister.length === 0) {
@@ -82,12 +97,13 @@ const postLogin = async (request, h) => {
       throw new InvariantError("Email is not registered");
     }
 
-    const verifyPassword = await bcrypt.compare(
+    const verified = verifyPassword(
       password,
+      resultPostLogin[0].salt,
       resultPostLogin[0].password,
     );
 
-    if (!verifyPassword) {
+    if (!verified) {
       throw new AuthenticationError("Wrong password");
     }
 

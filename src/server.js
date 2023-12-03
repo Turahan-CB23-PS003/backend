@@ -1,5 +1,3 @@
-/* global process */
-
 const Hapi = require("@hapi/hapi");
 const Inert = require("@hapi/inert");
 const Jwt = require("@hapi/jwt");
