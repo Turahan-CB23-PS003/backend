@@ -21,14 +21,25 @@ const postRetailer = async (request, h) => {
       throw new InvariantError(error.message);
     }
 
-    const { gmaps = null, image, ...restPayload } = request.payload;
+    const {
+      gmaps = null,
+      image,
+      description = null,
+      ...restPayload
+    } = request.payload;
     const fileName = image
       ? await uploadImage({ adminId, image, table: "retailers" })
       : null;
 
     const resultPostRetailer = await _executeQuery({
-      sql: "INSERT INTO retailers(admin_id, gmaps, image, name, status, open_time, close_time, location, contact) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      values: [adminId, gmaps, fileName, ...Object.values(restPayload)],
+      sql: "INSERT INTO retailers(admin_id, gmaps, image, description, name, status, open_time, close_time, location, contact) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      values: [
+        adminId,
+        gmaps,
+        fileName,
+        description,
+        ...Object.values(restPayload),
+      ],
     });
 
     if (resultPostRetailer.length === 0) {
@@ -39,7 +50,13 @@ const postRetailer = async (request, h) => {
       status: "success",
       message: "Retailer successfully added",
       data: {
-        retailers: { ...restPayload, gmaps, image: fileName },
+        retailers: {
+          id: resultPostRetailer.insertId,
+          ...restPayload,
+          gmaps,
+          description,
+          image: fileName,
+        },
       },
     });
 
@@ -66,17 +83,23 @@ const patchRetailer = async (request, h) => {
       throw new InvariantError(error.message);
     }
 
-    const { gmaps = null, image, ...restPayload } = request.payload;
+    const {
+      gmaps = null,
+      image,
+      description = null,
+      ...restPayload
+    } = request.payload;
     await deleteImage(retailerId, "retailers");
     const fileName = image
       ? await uploadImage({ adminId, image, table: "retailers" })
       : null;
 
     const resultPatchRetailer = await _executeQuery({
-      sql: "UPDATE retailers SET gmaps = ?, image = ?, name = ?, status = ?, open_time = ?, close_time = ?, location = ?, contact = ? WHERE id = ? AND admin_id = ?",
+      sql: "UPDATE retailers SET gmaps = ?, image = ?, description = ?, name = ?, status = ?, open_time = ?, close_time = ?, location = ?, contact = ? WHERE id = ? AND admin_id = ?",
       values: [
         gmaps,
         fileName,
+        description,
         ...Object.values(restPayload),
         retailerId,
         adminId,

@@ -26,7 +26,7 @@ const routes = [
   },
   {
     method: "PATCH",
-    path: `${routing}/meals/{retailerId}/{mealId}`,
+    path: `${routing}/meals/{mealId}`,
     handler: patchMeal,
     options: {
       auth: "auth_jwt",
@@ -40,7 +40,7 @@ const routes = [
   },
   {
     method: "GET",
-    path: `${routing}/meals/{retailerId}/{mealId}`,
+    path: `${routing}/meals/{mealId}`,
     handler: getSingleMeal,
   },
   {
@@ -50,7 +50,7 @@ const routes = [
   },
   {
     method: "DELETE",
-    path: `${routing}/meals/{retailerId}/{mealId}`,
+    path: `${routing}/meals/{mealId}`,
     handler: deleteMeal,
     options: {
       auth: "auth_jwt",
@@ -58,7 +58,7 @@ const routes = [
   },
   {
     method: "GET",
-    path: `${routing}/meals/{retailerId}`,
+    path: `${routing}/meals/retailer/{retailerId}`,
     handler: getRetailersAllMeals,
   },
   {

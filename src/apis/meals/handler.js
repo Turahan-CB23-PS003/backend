@@ -7,6 +7,19 @@ const {
 } = require("./validator");
 const { uploadImage, deleteImage } = require("../../helpers/ImageConverter");
 
+const getRetailerId = async (mealId) => {
+  const resultGetRetailerId = await _executeQuery({
+    sql: "SELECT retailer_id FROM meals WHERE id = ?",
+    values: [mealId],
+  });
+
+  if (resultGetRetailerId.length === 0) {
+    throw new InvariantError("Meal not found");
+  }
+
+  return resultGetRetailerId[0].retailer_id;
+};
+
 const postMeal = async (request, h) => {
   try {
     const { retailerId } = request.params;
@@ -20,14 +33,19 @@ const postMeal = async (request, h) => {
       throw new InvariantError(error.message);
     }
 
-    const { image, ...restPayload } = request.payload;
+    const { image, description = null, ...restPayload } = request.payload;
     const fileName = image
       ? await uploadImage({ adminId, image, table: "meals" })
       : null;
 
     const resultPostMeal = await _executeQuery({
-      sql: "INSERT INTO meals(retailer_id, name, description, price, status, date_produced, expiry_date, image) VALUES(?, ?, ?, ?, ?, ?, ?, ?)",
-      values: [retailerId, ...Object.values(restPayload), fileName],
+      sql: "INSERT INTO meals(retailer_id, name, price, status, date_produced, expiry_date, image, description) VALUES(?, ?, ?, ?, ?, ?, ?, ?)",
+      values: [
+        retailerId,
+        ...Object.values(restPayload),
+        fileName,
+        description,
+      ],
     });
 
     if (resultPostMeal.length === 0) {
@@ -38,7 +56,12 @@ const postMeal = async (request, h) => {
       status: "success",
       message: "Meal successfully added",
       data: {
-        meals: { ...restPayload, image: fileName },
+        meals: {
+          id: resultPostMeal.insertId,
+          ...restPayload,
+          description,
+          image: fileName,
+        },
       },
     });
     response.code(201);
@@ -50,9 +73,9 @@ const postMeal = async (request, h) => {
 
 const patchMeal = async (request, h) => {
   try {
-    const { retailerId } = request.params;
     const { mealId } = request.params;
     const { id: adminId } = request.auth.credentials;
+    const retailerId = await getRetailerId(mealId);
 
     await isRetailerExist(retailerId, adminId);
 
@@ -62,15 +85,15 @@ const patchMeal = async (request, h) => {
       throw new InvariantError(error.message);
     }
 
-    const { image, ...restPayload } = request.payload;
+    const { image, description = null, ...restPayload } = request.payload;
     await deleteImage(mealId, "meals");
     const fileName = image
       ? await uploadImage({ adminId, image, table: "meals" })
       : null;
 
     const resultPatchMeal = await _executeQuery({
-      sql: "UPDATE meals SET name = ?, description = ?, price = ?, status = ?, date_produced = ?, expiry_date = ?, image = ? WHERE id = ?",
-      values: [...Object.values(restPayload), fileName, mealId],
+      sql: "UPDATE meals SET name = ?, price = ?, status = ?, date_produced = ?, expiry_date = ?, description = ?, image = ? WHERE id = ?",
+      values: [...Object.values(restPayload), description, fileName, mealId],
     });
 
     if (resultPatchMeal.length === 0) {
@@ -81,7 +104,7 @@ const patchMeal = async (request, h) => {
       status: "success",
       message: "Meal successfully updated",
       data: {
-        meals: { ...restPayload, image: fileName },
+        meals: { ...restPayload, description, image: fileName },
       },
     });
     response.code(200);
@@ -155,9 +178,9 @@ const getAllMeals = async (request, h) => {
 
 const deleteMeal = async (request, h) => {
   try {
-    const { retailerId } = request.params;
     const { mealId } = request.params;
     const { id: adminId } = request.auth.credentials;
+    const retailerId = await getRetailerId(mealId);
 
     await isRetailerExist(retailerId, adminId);
     await deleteImage(mealId, "meals");

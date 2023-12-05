@@ -15,7 +15,7 @@ const isRetailerExist = async (retailerId, adminId) => {
 
 const postMealSchema = Joi.object({
   name: Joi.string().required(),
-  description: Joi.string().required(),
+  description: Joi.string(),
   price: Joi.number().required(),
   status: Joi.string().valid("active", "inactive").required(),
   dateProduced: Joi.date().required(),
@@ -25,7 +25,7 @@ const postMealSchema = Joi.object({
 
 const patchMealSchema = Joi.object({
   name: Joi.string().required(),
-  description: Joi.string().required(),
+  description: Joi.string(),
   price: Joi.number().required(),
   status: Joi.string().valid("active", "inactive").required(),
   dateProduced: Joi.date().required(),

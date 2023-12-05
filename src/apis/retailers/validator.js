@@ -20,6 +20,7 @@ const postRetailerSchema = Joi.object({
   status: Joi.string().valid("active", "inactive").required(),
   openTime: Joi.string().required(),
   closeTime: Joi.string().required(),
+  description: Joi.string(),
   location: Joi.string().required(),
   gmaps: Joi.string(),
   contact: Joi.string()
@@ -27,7 +28,6 @@ const postRetailerSchema = Joi.object({
     .pattern(/^[0-9]+$/)
     .message("Contact number must be a numeric value with less than 14 digits"),
   image: Joi.any(),
-  bannerImage: Joi.any(),
 });
 
 const patchRetailerSchema = Joi.object({
@@ -35,6 +35,7 @@ const patchRetailerSchema = Joi.object({
   status: Joi.string().valid("active", "inactive").required(),
   openTime: Joi.string().required(),
   closeTime: Joi.string().required(),
+  description: Joi.string(),
   location: Joi.string().required(),
   gmaps: Joi.string(),
   contact: Joi.string()
@@ -42,7 +43,6 @@ const patchRetailerSchema = Joi.object({
     .pattern(/^[0-9]+$/)
     .message("Contact number must be a numeric value with less than 14 digits"),
   image: Joi.any(),
-  bannerImage: Joi.any(),
 });
 
 const _executeQuery = (query) => {
