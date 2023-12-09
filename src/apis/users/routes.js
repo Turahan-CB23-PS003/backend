@@ -1,6 +1,12 @@
 const path = require("path");
 const { routing } = require("../../helpers/Routing");
-const { postRegister, postLogin, getUser, patchUser } = require("./handler");
+const {
+  postRegister,
+  postLogin,
+  getUser,
+  patchUser,
+  patchPasswod,
+} = require("./handler");
 
 const routes = [
   {
@@ -41,6 +47,14 @@ const routes = [
         multipart: true,
         maxBytes: 2 * 1024 * 1024,
       },
+    },
+  },
+  {
+    method: "PATCH",
+    path: `${routing}/users/{userId}/password`,
+    handler: patchPasswod,
+    options: {
+      auth: "auth_jwt",
     },
   },
   {

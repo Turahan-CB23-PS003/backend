@@ -11,6 +11,7 @@ const {
   postRegisterSchema,
   postLoginSchema,
   patchUserSchema,
+  patchPasswodSchema,
 } = require("./validator");
 const { uploadImage, deleteImage } = require("../../helpers/ImageConverter");
 const { generateAccessToken } = require("../../helpers/TokenManager");
@@ -217,6 +218,73 @@ const patchUser = async (request, h) => {
   }
 };
 
+const patchPasswod = async (request, h) => {
+  try {
+    const { userId } = request.params;
+    const { id: credentialId } = request.auth.credentials;
+
+    if (String(userId) !== String(credentialId)) {
+      throw new AuthorizationError(
+        "User is not authorized to access this resource",
+      );
+    }
+
+    const { error = undefined } = patchPasswodSchema.validate(
+      request.payload,
+    );
+
+    if (error) {
+      throw new InvariantError(error.message);
+    }
+
+    const resultValidateUser = await _executeQuery({
+      sql: "SELECT * FROM users WHERE id = ?",
+      values: [userId],
+    });
+
+    if (resultValidateUser.length === 0) {
+      throw new InvariantError("Email is not registered");
+    }
+
+    const { oldPassword, newPassword } = request.payload;
+
+    const verified = verifyPassword(
+      oldPassword,
+      resultValidateUser[0].salt,
+      resultValidateUser[0].password,
+    );
+
+    if (!verified) {
+      throw new AuthenticationError("Wrong password");
+    }
+
+    const { salt, hash } = hashPassword(newPassword);
+
+    const resultPatchPasswod = await _executeQuery({
+      sql: "UPDATE users SET password = ?, salt = ? WHERE id = ?",
+      values: [hash, salt, userId],
+    });
+
+    if (resultPatchPasswod.length === 0) {
+      throw new InvariantError("Fail to change password");
+    }
+
+    const response = h.response({
+      status: "success",
+      message: "Password successfully changed",
+      data: {
+        users: {
+          id: userId,
+        },
+      },
+    });
+    response.code(200);
+    return response;
+  } catch (error) {
+    return handleError(error, h);
+  }
+};
+
 const _executeQuery = (query) => {
   return new Promise((resolve, reject) => {
     pool.query(query, (error, results) => {
@@ -229,4 +297,10 @@ const _executeQuery = (query) => {
   });
 };
 
-module.exports = { postRegister, postLogin, getUser, patchUser };
+module.exports = {
+  postRegister,
+  postLogin,
+  getUser,
+  patchUser,
+  patchPasswod,
+};

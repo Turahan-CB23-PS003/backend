@@ -36,6 +36,11 @@ const patchUserSchema = Joi.object({
   image: Joi.any(),
 });
 
+const patchPasswodSchema = Joi.object({
+  oldPassword: Joi.string().required(),
+  newPassword: Joi.string().required(),
+});
+
 const _executeQuery = (query) => {
   return new Promise((resolve, reject) => {
     pool.query(query, (error, results) => {
@@ -53,4 +58,5 @@ module.exports = {
   postRegisterSchema,
   postLoginSchema,
   patchUserSchema,
+  patchPasswodSchema,
 };
