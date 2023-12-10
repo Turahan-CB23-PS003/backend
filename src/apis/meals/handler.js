@@ -85,11 +85,27 @@ const patchMeal = async (request, h) => {
       throw new InvariantError(error.message);
     }
 
-    const { image, description = null, ...restPayload } = request.payload;
-    await deleteImage(mealId, "meals");
-    const fileName = image
-      ? await uploadImage({ adminId, image, table: "meals" })
-      : null;
+    const resultValidateMeal = await _executeQuery({
+      sql: "SELECT * FROM meals WHERE id = ?",
+      values: [mealId],
+    });
+
+    if (resultValidateMeal.length === 0) {
+      throw new InvariantError("Id not found");
+    }
+
+    let fileName = resultValidateMeal[0].image;
+
+    const {
+      image = undefined,
+      description = null,
+      ...restPayload
+    } = request.payload;
+
+    if (image) {
+      await deleteImage(mealId, "meals");
+      fileName = await uploadImage({ adminId, image, table: "meals" });
+    }
 
     const resultPatchMeal = await _executeQuery({
       sql: "UPDATE meals SET name = ?, price = ?, status = ?, date_produced = ?, expiry_date = ?, description = ?, image = ? WHERE id = ?",

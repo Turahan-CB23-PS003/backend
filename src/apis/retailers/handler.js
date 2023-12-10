@@ -83,16 +83,28 @@ const patchRetailer = async (request, h) => {
       throw new InvariantError(error.message);
     }
 
+    const resultValidateRetailer = await _executeQuery({
+      sql: "SELECT * FROM retailers WHERE id = ? AND admin_id = ?",
+      values: [retailerId, adminId],
+    });
+
+    if (resultValidateRetailer.length === 0) {
+      throw new InvariantError("Id not found");
+    }
+
+    let fileName = resultValidateRetailer[0].image;
+
     const {
       gmaps = null,
-      image,
+      image = undefined,
       description = null,
       ...restPayload
     } = request.payload;
-    await deleteImage(retailerId, "retailers");
-    const fileName = image
-      ? await uploadImage({ adminId, image, table: "retailers" })
-      : null;
+
+    if (image) {
+      await deleteImage(retailerId, "retailers");
+      fileName = await uploadImage({ adminId, image, table: "retailers" });
+    }
 
     const resultPatchRetailer = await _executeQuery({
       sql: "UPDATE retailers SET gmaps = ?, image = ?, description = ?, name = ?, status = ?, open_time = ?, close_time = ?, location = ?, contact = ? WHERE id = ? AND admin_id = ?",

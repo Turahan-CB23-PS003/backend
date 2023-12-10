@@ -5,7 +5,7 @@ const {
   postLogin,
   getUser,
   patchUser,
-  patchPasswod,
+  patchPassword,
 } = require("./handler");
 
 const routes = [
@@ -52,7 +52,7 @@ const routes = [
   {
     method: "PATCH",
     path: `${routing}/users/{userId}/password`,
-    handler: patchPasswod,
+    handler: patchPassword,
     options: {
       auth: "auth_jwt",
     },

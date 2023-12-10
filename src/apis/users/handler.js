@@ -11,7 +11,7 @@ const {
   postRegisterSchema,
   postLoginSchema,
   patchUserSchema,
-  patchPasswodSchema,
+  patchPasswordSchema,
 } = require("./validator");
 const { uploadImage, deleteImage } = require("../../helpers/ImageConverter");
 const { generateAccessToken } = require("../../helpers/TokenManager");
@@ -230,7 +230,7 @@ const patchUser = async (request, h) => {
   }
 };
 
-const patchPasswod = async (request, h) => {
+const patchPassword = async (request, h) => {
   try {
     const { userId } = request.params;
     const { id: credentialId } = request.auth.credentials;
@@ -241,7 +241,7 @@ const patchPasswod = async (request, h) => {
       );
     }
 
-    const { error = undefined } = patchPasswodSchema.validate(request.payload);
+    const { error = undefined } = patchPasswordSchema.validate(request.payload);
 
     if (error) {
       throw new InvariantError(error.message);
@@ -270,12 +270,12 @@ const patchPasswod = async (request, h) => {
 
     const { salt, hash } = hashPassword(newPassword);
 
-    const resultPatchPasswod = await _executeQuery({
+    const resultPatchPassword = await _executeQuery({
       sql: "UPDATE users SET password = ?, salt = ? WHERE id = ?",
       values: [hash, salt, userId],
     });
 
-    if (resultPatchPasswod.length === 0) {
+    if (resultPatchPassword.length === 0) {
       throw new InvariantError("Fail to change password");
     }
 
@@ -312,5 +312,5 @@ module.exports = {
   postLogin,
   getUser,
   patchUser,
-  patchPasswod,
+  patchPassword,
 };

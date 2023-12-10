@@ -36,7 +36,7 @@ const patchUserSchema = Joi.object({
   image: Joi.any(),
 });
 
-const patchPasswodSchema = Joi.object({
+const patchPasswordSchema = Joi.object({
   oldPassword: Joi.string().required(),
   newPassword: Joi.string().required(),
 });
@@ -58,5 +58,5 @@ module.exports = {
   postRegisterSchema,
   postLoginSchema,
   patchUserSchema,
-  patchPasswodSchema,
+  patchPasswordSchema,
 };
