@@ -181,15 +181,27 @@ const patchUser = async (request, h) => {
       throw new InvariantError(error.message);
     }
 
-    const { name, image } = request.payload;
-    await deleteImage(credentialId, "users");
-    const fileName = image
-      ? await uploadImage({
-          adminId: "u",
-          image,
-          table: "users",
-        })
-      : null;
+    const resultValidateUser = await _executeQuery({
+      sql: "SELECT * FROM users WHERE id = ?",
+      values: [userId],
+    });
+
+    if (resultValidateUser.length === 0) {
+      throw new InvariantError("Id not found");
+    }
+
+    let fileName = resultValidateUser[0].image;
+
+    const { name, image = undefined } = request.payload;
+
+    if (image) {
+      await deleteImage(credentialId, "users");
+      fileName = await uploadImage({
+        adminId: "u",
+        image,
+        table: "users",
+      });
+    }
 
     const resultPatchUser = await _executeQuery({
       sql: "UPDATE users SET name = ?, image = ? WHERE id = ?",
@@ -229,9 +241,7 @@ const patchPasswod = async (request, h) => {
       );
     }
 
-    const { error = undefined } = patchPasswodSchema.validate(
-      request.payload,
-    );
+    const { error = undefined } = patchPasswodSchema.validate(request.payload);
 
     if (error) {
       throw new InvariantError(error.message);
@@ -243,7 +253,7 @@ const patchPasswod = async (request, h) => {
     });
 
     if (resultValidateUser.length === 0) {
-      throw new InvariantError("Email is not registered");
+      throw new InvariantError("Id not found");
     }
 
     const { oldPassword, newPassword } = request.payload;
