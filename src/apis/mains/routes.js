@@ -1,4 +1,16 @@
 const path = require("path");
+const fileNameHandler = (filename) => {
+  if (
+    !filename.includes(".") &&
+    !filename.includes("assets") &&
+    !filename.includes("api") &&
+    !filename.includes("favicon") &&
+    filename !== "index.html"
+  ) {
+    return "index.html";
+  }
+  return filename;
+};
 
 const routes = [
   {
@@ -12,22 +24,20 @@ const routes = [
   },
   {
     method: "GET",
-    path: "/{filename}",
+    path: "/assets/{filename}",
     handler: (request, h) => {
       const { filename } = request.params;
-      if (filename === "index.html") {
-        return h.redirect("/");
-      }
-      const filePath = path.join(__dirname, "../../dist", filename);
+      const filePath = path.join(__dirname, "../../dist/assets", filename);
       return h.file(filePath);
     },
   },
   {
     method: "GET",
-    path: "/assets/{filename}",
+    path: "/{filename}",
     handler: (request, h) => {
       const { filename } = request.params;
-      const filePath = path.join(__dirname, "../../dist/assets", filename);
+      const newFilename = fileNameHandler(filename);
+      const filePath = path.join(__dirname, "../../dist", newFilename);
       return h.file(filePath);
     },
   },
