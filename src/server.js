@@ -6,6 +6,7 @@ require("dotenv").config();
 const { routes: retailersRoutes } = require("./apis/retailers/routes");
 const { routes: mealsRoutes } = require("./apis/meals/routes");
 const { routes: usersRoutes } = require("./apis/users/routes");
+const { routes: mainsRoutes } = require("./apis/mains/routes");
 
 const init = async () => {
   const server = Hapi.server({
@@ -41,7 +42,12 @@ const init = async () => {
     }),
   });
 
-  server.route([...retailersRoutes, ...mealsRoutes, ...usersRoutes]);
+  server.route([
+    ...retailersRoutes,
+    ...mealsRoutes,
+    ...usersRoutes,
+    ...mainsRoutes,
+  ]);
 
   await server.start();
   console.log("Server running on %s", server.info.uri);
