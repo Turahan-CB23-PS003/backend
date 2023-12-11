@@ -5,7 +5,10 @@ Welcome to the Turahan backend repository! This repository contains the codebase
 # Status
 ![Cloud Run](https://github.com/Turahan-CB23-PS003/backend/actions/workflows/cloud-run.yml/badge.svg)
 
-https://turahan-run-rad3c73vaa-et.a.run.app
+## Deployments
+
+- Production: [https://turahan.ziakode.com/](https://turahan.ziakode.com/)
+- Development: [https://turahan-run-rad3c73vaa-et.a.run.app](https://turahan-run-rad3c73vaa-et.a.run.app)
 
 ## Getting Started
 
