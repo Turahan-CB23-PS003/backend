@@ -202,6 +202,11 @@ const deleteRetailer = async (request, h) => {
 
     await deleteImage(retailerId, "retailers");
 
+    await _executeQuery({
+      sql: "DELETE FROM meals WHERE retailer_id = ?",
+      values: [retailerId],
+    });
+
     const resultDeleteRetailer = await _executeQuery({
       sql: "DELETE FROM retailers WHERE id = ? AND admin_id = ?",
       values: [retailerId, adminId],
