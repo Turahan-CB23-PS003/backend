@@ -1,4 +1,5 @@
 const path = require("path");
+
 const fileNameHandler = (filename) => {
   if (
     !filename.includes(".") &&
@@ -8,6 +9,14 @@ const fileNameHandler = (filename) => {
     filename !== "index.html"
   ) {
     return "index.html";
+  } else if (filename.includes("assets")) {
+    const path = filename.split("assets")[1];
+    return `assets${path}`;
+  }
+  else if (filename.includes(".")) {
+    const path = filename.split("/");
+    const ext = path[path.length - 1];
+    return `${ext}`;
   }
   return filename;
 };
@@ -37,6 +46,16 @@ const routes = [
     handler: (request, h) => {
       const { filename } = request.params;
       const newFilename = fileNameHandler(filename);
+      const filePath = path.join(__dirname, "../../dist", newFilename);
+      return h.file(filePath);
+    },
+  },
+  {
+    method: "GET",
+    path: "/{filename}/{branchName*}",
+    handler: (request, h) => {
+      const { branchName } = request.params;
+      const newFilename = fileNameHandler(branchName);
       const filePath = path.join(__dirname, "../../dist", newFilename);
       return h.file(filePath);
     },
