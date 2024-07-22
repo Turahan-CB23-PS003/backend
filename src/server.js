@@ -3,7 +3,7 @@ const Inert = require("@hapi/inert");
 const Jwt = require("@hapi/jwt");
 require("dotenv").config();
 
-const { routes: retailersRoutes } = require("./apis/retailers/routes");
+// const { routes: retailersRoutes } = require("./apis/retailers/routes");
 const { routes: mealsRoutes } = require("./apis/meals/routes");
 const { routes: usersRoutes } = require("./apis/users/routes");
 const { routes: mainsRoutes } = require("./apis/mains/routes");
@@ -43,7 +43,7 @@ const init = async () => {
   });
 
   server.route([
-    ...retailersRoutes,
+    // ...retailersRoutes,
     ...mealsRoutes,
     ...usersRoutes,
     ...mainsRoutes,
