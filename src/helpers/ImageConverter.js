@@ -31,9 +31,16 @@ const blobToImage = (blob, filePath) => {
   fs.writeFileSync(filePath, blob);
 };
 
+const replaceSpacesWithUnderscores = (filename) => {
+  return filename.replace(/\s/g, "_");
+};
+
 const uploadImage = async ({ adminId, image, table }) => {
   const uploadPath = path.join(__dirname, `../assets/img/${table}`);
-  const fileName = `${adminId}_${Date.now()}_${image.hapi.filename}`;
+  const originalFilename = image.hapi.filename;
+  const fileName = `${adminId}_${Date.now()}_${replaceSpacesWithUnderscores(
+    originalFilename,
+  )}`;
   const filePath = path.join(uploadPath, fileName);
   const fileStream = fs.createWriteStream(filePath);
 
